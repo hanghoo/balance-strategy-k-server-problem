@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "node.h"
 #include <queue> // for queue container
 #include <limits.h>
 #include <utility> // for pair
@@ -55,9 +54,12 @@ void yellow_edge(int sx, int sy, int tx, int ty);
 void green_edge(int sx, int sy, int tx, int ty);
 
 int breadth_first_search(pair <int,int> src, pair <int,int> dest, map< pair<int,int>, pair<int, int> > &candidate_path);
-vector<pair <int, int>> find_path(pair <int, int> src, pair <int, int> dest, map< pair<int,int>, pair<int, int> > candidate_path);
+void find_path(pair <int, int> src, pair <int, int> dest, map< pair<int,int>, pair<int, int> > candidate_path, vector<pair <int, int>> &path);
+void balance_stratege(int tx, int ty);
 
 int graph[SIZE][SIZE][4];
+pair<int, int> server[4]; // store 4 servers locations
+int acc_distance[4] = {0}; // store the accumulated distance of 4 servers
 
 int main(int argc, char **argv)
 { //int graph[SIZE][SIZE][4]; 
@@ -68,6 +70,12 @@ int main(int argc, char **argv)
     {  sscanf(argv[1], "%d", &rand_init_value);
        srand( rand_init_value );
     }
+  /* set up server locations */
+    server[0] = make_pair(0,0);
+    server[1] = make_pair(SIZE - 1, 0);
+    server[2] = make_pair(SIZE - 1, SIZE -1);
+    server[3] = make_pair(0, SIZE - 1);
+
   /* setup grid */
   for( i=0;i< SIZE; i++ )
     for( j=0; j <SIZE; j++)
@@ -299,59 +307,44 @@ int main(int argc, char **argv)
 		  }
 	     if( request_i >= 0 && request_j >= 0 )
 	      {  /* next server request is at (i,j) */ ;
-	    /* check graph[x][y][]. FREE=1; BLOCKED=0 */
-	     	printf("Coordinate is: (%d,%d)\n", request_i, request_j);
-	     	printf("Check right point 0 direction: %d\n", graph[33][34][0]);
-	     	printf("Check right point 1 direction: %d\n", graph[33][34][1]);
-	     	printf("Check right point 2 direction: %d\n", graph[33][34][2]);
-	     	printf("Check right point 3 direction: %d\n", graph[33][34][3]);
-	     	printf("\n");
-
-	     	printf("Check right point 0 direction: %d\n", graph[34][34][0]);
-	     	printf("Check right point 1 direction: %d\n", graph[34][34][1]);
-	     	printf("Check right point 2 direction: %d\n", graph[34][34][2]);
-	     	printf("Check right point 3 direction: %d\n", graph[34][34][3]);
-	     	printf("\n");
-
-	     	printf("Check right point 0 direction: %d\n", graph[33][33][0]);
-	     	printf("Check right point 1 direction: %d\n", graph[33][33][1]);
-	     	printf("Check right point 2 direction: %d\n", graph[33][33][2]);
-	     	printf("Check right point 3 direction: %d\n", graph[33][33][3]);
-	     	printf("\n");
-
-	     	printf("Check right point 0 direction: %d\n", graph[32][34][0]);
-	     	printf("Check right point 1 direction: %d\n", graph[32][34][1]);
-	     	printf("Check right point 2 direction: %d\n", graph[32][34][2]);
-	     	printf("Check right point 3 direction: %d\n", graph[32][34][3]);
-	     	printf("\n");
+	      	balance_stratege(request_i, request_j);
 
 	    /* test the distance calculation by BFS */
-	     	pair <int, int> src(0,0);
-	     	pair <int, int> dest(request_i,request_j);
-	     	map< pair<int,int>, pair<int, int> > candidate_path;
-	     	// BFS calculate distance
-	     	int distance = breadth_first_search(src, dest, candidate_path);
-	     	printf("Distance between pink dot is: %d\n", distance);
-	     	printf("Map size is: %d\n", candidate_path.size());
-	     	// find every node from src to dest
-	     	vector<pair <int, int>> path;
-	     	//path = find_path(src, dest, candidate_path);
-	     	//printf("Size of path is: %d\n", path.size());
+     	// pair <int, int> src(0,0);
+     	// pair <int, int> dest(request_i,request_j);
+     	// map< pair<int,int>, pair<int, int> > candidate_path;
+     	// // BFS calculate distance
+     	// int distance = breadth_first_search(src, dest, candidate_path);
+     	// printf("Distance between pink dot is: %d\n", distance);
+     	// printf("Map size is: %d\n", candidate_path.size());
+     	// //pair<int, int> cur;
+     	// //cur = candidate_path[dest];
+     	// //printf("The father of dest is:(%d, %d)\n", cur.first, cur.second);
 
-	    /* update colored corner */
-	    // XFillArc( display_ptr, win, gc, /*black*/
-		   //     startx, starty, upper left corner 
-		   //     (int) (0.66*stepx), (int) (0.66*stepy), 0, 360*64);
+     	// // find every node from src to dest
+     	// vector<pair <int, int>> path;
+     	// find_path(src, dest, candidate_path, path);
+     	// printf("Size of path is: %d\n", path.size());
+
+     	// // draw the pink path for test
+     	// for(int i=0; i<path.size()-1; i++){
+     	// 	pink_edge(path[i].first, path[i].second, path[i+1].first, path[i+1].second);
+     	// }
+     	// // draw the update pot
+     	// XFillArc( display_ptr, win, gc_pink, /*pink*/
+	     //   startx + dest.first*stepx, starty + dest.second*stepy, /* left up corner */
+	     //   (int) (0.66*stepx), (int) (0.66*stepy), 0, 360*64);
+
 
 		/* just to test the colored edges */
-		if( graph[request_i][request_j][0] == FREE )
-		  pink_edge(request_i, request_j, request_i+1, request_j);
-		if( graph[request_i][request_j][1] == FREE )
-		  yellow_edge(request_i, request_j, request_i, request_j+1);
-		if( graph[request_i][request_j][2] == FREE )
-		  cyan_edge(request_i, request_j, request_i-1, request_j);
-		if( graph[request_i][request_j][3] == FREE )
-		  green_edge(request_i, request_j, request_i, request_j-1);
+		// if( graph[request_i][request_j][0] == FREE )
+		//   pink_edge(request_i, request_j, request_i+1, request_j);
+		// if( graph[request_i][request_j][1] == FREE )
+		//   yellow_edge(request_i, request_j, request_i, request_j+1);
+		// if( graph[request_i][request_j][2] == FREE )
+		//   cyan_edge(request_i, request_j, request_i-1, request_j);
+		// if( graph[request_i][request_j][3] == FREE )
+		//   green_edge(request_i, request_j, request_i, request_j-1);
 	      }
 
           }
@@ -420,7 +413,7 @@ int breadth_first_search(pair <int,int> src, pair <int,int> dest, map< pair<int,
 	//map< pair<int,int>, pair<int, int> > candidate_path;
 	int visited[SIZE][SIZE] = {0}; // record whether visited
 	que.push(src); // src queue
-	visited[src.first][src.second] = 1; // visited
+	//visited[src.first][src.second] = 1; // visited
 
 	int n;
 	int step = 0;
@@ -431,70 +424,80 @@ int breadth_first_search(pair <int,int> src, pair <int,int> dest, map< pair<int,
 		//printf("Queue size is: %d\n", n);
 		for(int i=0; i<n; i++){
 			cur = que.front(); // get the 1st node
+			visited[cur.first][cur.second] = 1;
 			que.pop(); // pop this node
 			if(cur.first  == dest.first  && cur.second == dest.second){
-				printf("I find the destination\n");
-				printf("(%d, %d)\n", cur.first, cur.second);
+				//printf("I find the destination\n");
+				//printf("(%d, %d)\n", cur.first, cur.second);
 				return step; // end criteria
 			}
 			//printf("Coordinates of node is: (%d, %d)\n", cur.x, cur.y);
 
 			// right
 			if(cur.first < SIZE - 1 && graph[cur.first][cur.second][0] == FREE && visited[cur.first + 1][cur.second] == 0){
-				tmp.first = cur.first + 1;
-				tmp.second = cur.second;
+				//tmp.first = cur.first + 1;
+				//tmp.second = cur.second;
+				tmp = make_pair(cur.first + 1, cur.second);
 				candidate_path[tmp] = cur;
 				que.push(tmp);
-				visited[cur.first + 1][cur.second] = 1;
+				//visited[cur.first + 1][cur.second] = 1;
 				//printf("%d,%d\n", tmp.x, tmp.y);
 				// }			
 			}
 			// down
 			if(cur.second < SIZE - 1 && graph[cur.first][cur.second][1] == FREE && visited[cur.first][cur.second + 1] == 0){
-				tmp.first = cur.first;
-				tmp.second = cur.second + 1;
+				//tmp.first = cur.first;
+				//tmp.second = cur.second + 1;
+				tmp = make_pair(cur.first, cur.second + 1);
 				candidate_path[tmp] = cur;
 				que.push(tmp);
-				visited[cur.first][cur.second + 1] = 1;
+				//visited[cur.first][cur.second + 1] = 1;
 			}
 			// left
 			if(cur.first > 0 && graph[cur.first][cur.second][2] == FREE && visited[cur.first - 1][cur.second] == 0){
-				tmp.first = cur.second - 1;
-				tmp.first = cur.second;
+				//tmp.first = cur.first - 1;
+				//tmp.second = cur.second;
+				tmp = make_pair(cur.first - 1, cur.second);
 				candidate_path[tmp] = cur;
 				que.push(tmp);
-				visited[cur.first - 1][cur.second] = 1;
+				//visited[cur.first - 1][cur.second] = 1;
 			}
 			// top
 			if(cur.second > 0 && graph[cur.first][cur.second][3] == FREE && visited[cur.first][cur.second - 1] == 0){
-				tmp.first = cur.first;
-				tmp.second = cur.second - 1;
+				//tmp.first = cur.first;
+				//tmp.second = cur.second - 1;
+				tmp = make_pair(cur.first, cur.second - 1);
 				candidate_path[tmp] = cur;
 				que.push(tmp);
-				visited[cur.first][cur.second - 1] = 1;
+				//visited[cur.first][cur.second - 1] = 1;
 			}
 		}
 
 		step++;
 	}
-
-	return 0; // queue is empty, the dest cannot reach
+	//printf("This target point cannot reach\n");
+	return INT_MAX; // queue is empty, the dest cannot reach
 
 }
 /* breadth first search to get the distance end */
 
 
 /* recursive function to find the path */
-vector<pair <int, int>> find_path(pair <int, int> src, pair <int, int> dest, map< pair<int,int>, pair<int, int> > candidate_path){
-	vector<pair <int, int>> path;
+void find_path(pair <int, int> src, pair <int, int> dest, map< pair<int,int>, pair<int, int> > candidate_path, vector<pair <int, int>> &path){
 	if(candidate_path.size() == 0){ // src is dest
-		return path;
+		return;
 	}
 
 	if(dest.first == src.first && dest.second == src.second){
-		return path;
+		path.push_back(src);
+		return;
 	}
-	
+
+	// pair<int, int> cur;
+	// path.push_back(dest);
+	// cur = candidate_path[dest];
+	// printf("temp coordinates: (%d, %d)\n", cur.first, cur.second);
+
 	pair<int, int> cur;
 	map< pair <int, int>, pair <int, int> >::iterator iter;
     iter = candidate_path.find(dest);
@@ -502,48 +505,135 @@ vector<pair <int, int>> find_path(pair <int, int> src, pair <int, int> dest, map
 	{
 		path.push_back(dest);
 	    cur = candidate_path[dest];
-	    printf("temp coordinates: (%d, %d)\n", cur.first, cur.second);
+	    //printf("temp coordinates: (%d, %d)\n", cur.first, cur.second);
 	}
 	else
 	{
-	    printf("This point cannot reach\n");
-	    return path;
+	    //printf("This target point cannot reach through 4 servers\n");
+	    return;
 	}
 		
-	find_path(src, cur, candidate_path);
+	find_path(src, cur, candidate_path, path);
+
+	return;
 
 }
 /* recursive function to find the path end */
 
 
 /* balance strategy */
-// int balance_stratege(Server s1, Server s2, Server s3, Server s4, Node dest){
-// 	int dist_1, dist_2, dist_3, dist_4;
-// 	int dd_1, dd_2, dd_3, dd_4;
-// 	dist_1 = breadth_first_search(s1.node, dest);
-// 	dist_2 = breadth_first_search(s2.node, dest);
-// 	dist_3 = breadth_first_search(s3.node, dest);
-// 	dist_4 = breadth_first_search(s4.node, dest);
+void balance_stratege(int tx, int ty){
+	// global variable
+	// server[4] stores location of 4 servers clockwise, pink, yellow, cyan, green
+	// acc_distance[4] stores accumulated distances of 4 servers
+	int cur_distance = 0;
+	int min = INT_MAX;
+	int index = 0;
+	pair <int, int> src;
+	pair <int, int> dest;
+	map< pair<int,int>, pair<int, int> > candidate_path;
 
-// 	dd_1 = max(dist_1, s2.distance, s3.distance, s4.distance) - min(dist_1, s2.distance, s3.distance, s4.distance);
-// 	dd_2 = max(s1.distance, dist_2, s3.distance, s4.distance) - min(s1.distance, dist_2, s3.distance, s4.distance);
-// 	dd_3 = max(s1.distance, s2.distance, dist_3, s4.distance) - min(s1.distance, s2.distance, dist_3, s4.distance);
-// 	dd_4 = max(s1.distance, s2.distance, s3.distance, dist_4) - min(s1.distance, s2.distance, s3.distance, dist_4);
+	for(int i=0; i<4; i++){
+		src = make_pair(server[i].first, server[i].second);
+		dest = make_pair(tx, ty);
+		cur_distance = breadth_first_search(src, dest, candidate_path);
+		candidate_path.clear(); // clear it for next server
+		if(cur_distance > 0 && cur_distance < 1000){
+			printf("Server %d can reach this target point.\n", i);
+		}
+		else{
+			printf("Server %d cannot reach this target point. The non-Reachable distance is INT_MAX\n", i);
+		}
+		if(cur_distance + acc_distance[i] < min){
+			min = cur_distance + acc_distance[i];
+			index = i;
+		}
+		printf("\n");
+	}
 
-// 	int min;
-// 	min = min(dd_1, dd_2, dd_3, dd_4);
+	// find the optimal move refer to index
+	if(min < 1000){
+		printf("Optimal selected server %d is going to this target point...\n", index);
+	}
+	else{
+		printf("All servers cannot reach this target point\n");
+	}
+	//printf("Selected server is %d\n", index);
+	src = make_pair(server[index].first, server[index].second);
+	dest = make_pair(tx, ty);
+	/* calculate the distance */
+	cur_distance = breadth_first_search(src, dest, candidate_path); // recorde the candidate_path
+	/* according to optimal server, find the path */
+	vector<pair <int, int>> path;
+	find_path(src, dest, candidate_path, path);
+	candidate_path.clear(); // clear candidate_path map
+	if(!path.empty()){
+		/* drive index server */
+		switch(index){
+			case 0:
+			// draw the pink path for test
+	     	for(int i=0; i<path.size()-1; i++){
+	     		pink_edge(path[i].first, path[i].second, path[i+1].first, path[i+1].second);
+	     	}
+	     	path.clear(); // clear path vector
+	     	// draw the update pot
+	     	XFillArc( display_ptr, win, gc_pink, /* pink */
+		       startx + dest.first*stepx, starty + dest.second*stepy, 
+		       (int) (0.66*stepx), (int) (0.66*stepy), 0, 360*64);
+	     	// update the src of moving server and accumulated distance
+	     	server[index] = make_pair(dest.first, dest.second);
+	     	acc_distance[index] = cur_distance + acc_distance[index];
+	     	break;
 
-// 	if(min == dd_1){
-// 		return 1;
-// 	}
-// 	else if(min == dd_2){
-// 		return 2;
-// 	}
-// 	else if(min = dd_3){
-// 		return 3;
-// 	}
-// 	else{
-// 		return 4;
-// 	}
-// }
-/* balance strategy end */
+	     	case 1:
+	     	// draw the yellow path for test
+	     	for(int i=0; i<path.size()-1; i++){
+	     		yellow_edge(path[i].first, path[i].second, path[i+1].first, path[i+1].second);
+	     	}
+	     	path.clear(); // clear path vector
+	     	// draw the update pot
+	     	XFillArc( display_ptr, win, gc_yellow, /* yellow */
+		       startx + dest.first*stepx, starty + dest.second*stepy, 
+		       (int) (0.66*stepx), (int) (0.66*stepy), 0, 360*64);
+	     	// update the src of moving server and accumulated distance
+	     	server[index] = make_pair(dest.first, dest.second);
+	     	acc_distance[index] = cur_distance + acc_distance[index];
+	     	break;
+
+	     	case 2:
+	     	// draw the cyan path for test
+	     	for(int i=0; i<path.size()-1; i++){
+	     		cyan_edge(path[i].first, path[i].second, path[i+1].first, path[i+1].second);
+	     	}
+	     	path.clear(); // clear path vector
+	     	// draw the update pot
+	     	XFillArc( display_ptr, win, gc_cyan, /* cyan */
+		       startx + dest.first*stepx, starty + dest.second*stepy, 
+		       (int) (0.66*stepx), (int) (0.66*stepy), 0, 360*64);
+	     	// update the src of moving server and accumulated distance
+	     	server[index] = make_pair(dest.first, dest.second);
+	     	acc_distance[index] = cur_distance + acc_distance[index];
+	     	break;
+
+	     	case 3:
+	     	// draw the green path for test
+	     	for(int i=0; i<path.size()-1; i++){
+	     		green_edge(path[i].first, path[i].second, path[i+1].first, path[i+1].second);
+	     	}
+	     	path.clear(); // clear path vector
+	     	// draw the update pot
+	     	XFillArc( display_ptr, win, gc_green, /* green */
+		       startx + dest.first*stepx, starty + dest.second*stepy, 
+		       (int) (0.66*stepx), (int) (0.66*stepy), 0, 360*64);
+	     	// update the src of moving server and accumulated distance
+	     	server[index] = make_pair(dest.first, dest.second);
+	     	acc_distance[index] = cur_distance + acc_distance[index];
+	     	break;
+	     	}
+	    }
+    else{
+    	printf("Please change another valide target point...\n");
+    	return;	    
+	}
+
+}/* balance strategy end */
