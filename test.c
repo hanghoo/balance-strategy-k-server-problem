@@ -440,9 +440,7 @@ int breadth_first_search(pair <int,int> src, pair <int,int> dest, map< pair<int,
 				tmp = make_pair(cur.first + 1, cur.second);
 				candidate_path[tmp] = cur;
 				que.push(tmp);
-				//visited[cur.first + 1][cur.second] = 1;
-				//printf("%d,%d\n", tmp.x, tmp.y);
-				// }			
+				//visited[cur.first + 1][cur.second] = 1;			
 			}
 			// down
 			if(cur.second < SIZE - 1 && graph[cur.first][cur.second][1] == FREE && visited[cur.first][cur.second + 1] == 0){
