@@ -124,6 +124,9 @@ int main(int argc, char **argv)
 
   printf("Width %d, Height %d, Screen Number %d\n", 
            display_width, display_height, screen_num);
+  /* illustrate servers' colors */
+  printf("Sever 0 is pink, Server 1 is yellow, Server 2 is cyan, Server 3 is green\n");
+
   /* creating the window */
   border_width = 10;
   win_x = 0; win_y = 0;
@@ -284,7 +287,16 @@ int main(int argc, char **argv)
         XFillArc( display_ptr, win, gc_green, /*green*/
 		       startx, starty+(SIZE-1)*stepy, /*left bottom corner */
 		       (int) (0.66*stepx), (int) (0.66*stepy), 0, 360*64);
-                
+
+        /* refresh server location and accumulated distance */
+	    server[0] = make_pair(0,0);
+	    server[1] = make_pair(SIZE - 1, 0);
+	    server[2] = make_pair(SIZE - 1, SIZE -1);
+	    server[3] = make_pair(0, SIZE - 1);
+
+	    acc_distance[4] = {0};    
+
+
                 
 
           break;
@@ -536,17 +548,16 @@ void balance_stratege(int tx, int ty){
 		dest = make_pair(tx, ty);
 		cur_distance = breadth_first_search(src, dest, candidate_path);
 		candidate_path.clear(); // clear it for next server
-		if(cur_distance > 0 && cur_distance < 1000){
+		if(cur_distance >= 0 && cur_distance < 1000){
 			printf("Server %d can reach this target point.\n", i);
 		}
 		else{
 			printf("Server %d cannot reach this target point. The non-Reachable distance is INT_MAX\n", i);
 		}
-		if(cur_distance + acc_distance[i] < min){
+		if(cur_distance + acc_distance[i] >= 0 && cur_distance + acc_distance[i] < min){
 			min = cur_distance + acc_distance[i];
 			index = i;
 		}
-		printf("\n");
 	}
 
 	// find the optimal move refer to index
@@ -628,9 +639,11 @@ void balance_stratege(int tx, int ty){
 	     	acc_distance[index] = cur_distance + acc_distance[index];
 	     	break;
 	     	}
+	     	printf("\n");
 	    }
     else{
     	printf("Please change another valide target point...\n");
+    	printf("\n");
     	return;	    
 	}
 
